@@ -11,6 +11,7 @@ import {
   getDocs,
   doc,
   getDoc,
+  setDoc,
   query,
   where,
   orderBy,
@@ -103,6 +104,13 @@ const sysTransactionsCount = document.getElementById("sysTransactionsCount");
 
 // Initialize the app
 function init() {
+  // Check localStorage authentication immediately
+  if (!isLocalStorageAuthenticated()) {
+    console.log('No localStorage authentication found, redirecting to login');
+    window.location.href = "index.html";
+    return;
+  }
+  
   setupEventListeners();
   checkAuthState();
   loadInitialData();
@@ -120,7 +128,18 @@ function setupEventListeners() {
   sidebarOverlay.addEventListener("click", closeSidebar);
   
   // Logout
-
+  logoutBtn.addEventListener("click", () => {
+    // Clear localStorage authentication
+    localStorage.removeItem('adminAuthenticated');
+    localStorage.removeItem('adminAuthTime');
+    
+    signOut(auth).then(() => {
+      window.location.href = "index.html";
+    }).catch(() => {
+      // Even if Firebase signOut fails, redirect to login
+      window.location.href = "index.html";
+    });
+  });
   
   // Dark mode toggle
   toggleDarkModeBtn.addEventListener("click", toggleDarkMode);
@@ -201,13 +220,33 @@ function toggleDarkMode() {
   localStorage.setItem("darkMode", html.classList.contains("dark"));
 }
 
+// Check localStorage authentication
+function isLocalStorageAuthenticated() {
+  const authTime = localStorage.getItem('adminAuthTime');
+  if (!authTime) return false;
+  
+  // Check if authentication is still valid (24 hours)
+  const now = Date.now();
+  const authTimestamp = parseInt(authTime);
+  const validDuration = 24 * 60 * 60 * 1000; // 24 hours
+  
+  return (now - authTimestamp) < validDuration;
+}
+
 // Check auth state
 function checkAuthState() {
   onAuthStateChanged(auth, (user) => {
-    if (!user) {
+    console.log('Admin.js auth state changed:', user);
+    if (!user && !isLocalStorageAuthenticated()) {
+      // Check if we're already on the login page to avoid redirect loops
+      if (window.location.pathname.includes('index.html') || window.location.pathname.endsWith('/')) {
+        return;
+      }
+      console.log('No user found, redirecting to index.html');
       window.location.href = "index.html";
     } else {
-      currentUser = user;
+      console.log('User authenticated:', user ? user.uid : 'via localStorage');
+      currentUser = user || { uid: 'localStorage-auth', isAnonymous: true };
       showSection("dashboard");
     }
   });

@@ -1,561 +1,96 @@
 <!DOCTYPE html>
-<html lang="uz" class="dark">
+<html lang="uz">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Qarzdorlik Boshqaruvi</title>
+    <title>Admin Kirish</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .sidebar {
-            transition: transform 0.3s ease;
+        .login-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        .dark .dark\:bg-dark-gradient {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        .card-shadow {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        .loader {
-            border-top-color: #3b82f6;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .rating-badge {
-            background: linear-gradient(90deg,#fbbf24,#f59e42);
+        .input-focus:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen">
-    <!-- Sidebar -->
-    <div id="sidebar" class="sidebar fixed top-0 left-0 h-full w-64 bg-white dark:bg-dark-gradient shadow-lg z-40 -translate-x-full md:translate-x-0">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-                <h1 class="text-xl font-bold text-gray-800 dark:text-white">Admin Panel</h1>
-                <button id="closeSidebar" class="md:hidden text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-times"></i>
-                </button>
+<body class="login-bg min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+        <!-- Login Card -->
+        <div class="bg-white rounded-2xl card-shadow p-8">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-shield-alt text-white text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800 mb-2">Admin Panel</h1>
+                <p class="text-gray-600">Xavfsizlik kodi kiriting</p>
             </div>
-        </div>
-        <div class="p-4">
-            <div id="sidebarUserInfo" class="flex items-center gap-3 mb-6 p-3 rounded-lg bg-gray-100 dark:bg-gray-800 shadow">
-                <img src="https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff&size=64" 
-                     alt="Admin" class="w-12 h-12 rounded-full border-2 border-blue-400 shadow">
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-6">
                 <div>
-                    <div class="font-bold text-lg flex items-center gap-2">
-                        <span class="dark:text-white">Admin</span>
-                    </div>
-                    <div class="text-xs font-mono text-gray-500 dark:text-gray-400 mt-1">ID: <span class="tracking-widest">ADMIN123</span></div>
-                </div>
-            </div>
-            
-            <nav class="space-y-1">
-                <a href="#" class="flex items-center gap-3 p-3 rounded-lg bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-                <a href="#users" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    <i class="fas fa-users"></i>
-                    <span>Foydalanuvchilar</span>
-                </a>
-                <a href="#debtors" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    <span>Barcha Qarzdorlar</span>
-                </a>
-                <a href="#transactions" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Tranzaksiyalar</span>
-                </a>
-                <a href="#settings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    <i class="fas fa-cog"></i>
-                    <span>Sozlamalar</span>
-                </a>
-            </nav>
-            
-            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button id="logoutBtn" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Chiqish</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Sidebar overlay -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
-    
-    <!-- Main content -->
-    <div class="md:ml-64">
-        <!-- Header -->
-        <header class="bg-white dark:bg-gray-800 shadow-sm">
-            <div class="flex items-center justify-between p-4">
-                <button id="openSidebar" class="md:hidden text-gray-500 dark:text-gray-400">
-                    <i class="fas fa-bars"></i>
-                </button>
-                
-                <div class="flex items-center gap-4">
+                    <label for="securityCode" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-key mr-2"></i>Xavfsizlik kodi
+                    </label>
                     <div class="relative">
-                        <input type="text" placeholder="Qidirish..." 
-                               class="pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                    </div>
-                    
-                    <button class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-bell"></i>
-                    </button>
-                    
-                    <button id="toggleDarkMode" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400">
-                        <i class="fas fa-moon dark:hidden"></i>
-                        <i class="fas fa-sun hidden dark:block"></i>
-                    </button>
-                </div>
-            </div>
-        </header>
-        
-        <!-- Main content -->
-        <main class="p-4">
-            <!-- Dashboard Section -->
-            <section id="dashboard">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Admin Dashboard</h2>
-                
-                <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Foydalanuvchilar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalUsers">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                                <i class="fas fa-users text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Qarzdorlar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtors">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                                <i class="fas fa-file-invoice-dollar text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Qarz Miqdori</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtAmount">0 so'm</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
-                                <i class="fas fa-money-bill-wave text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p class="text-gray-500 dark:text-gray-400">Faol Tranzaksiyalar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="activeTransactions">0</h3>
-                            </div>
-                            <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                                <i class="fas fa-exchange-alt text-xl"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Foydalanuvchilar statistikasi</h3>
-                        <canvas id="usersChart" height="250"></canvas>
-                    </div>
-                    
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Qarzdorlik statistikasi</h3>
-                        <canvas id="debtChart" height="250"></canvas>
-                    </div>
-                </div>
-                
-                <!-- Recent Activity -->
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 mb-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">So'nggi Faollik</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Foydalanuvchi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Harakat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Miqdor</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Vaqt</th>
-                                </tr>
-                            </thead>
-                            <tbody id="recentActivityTable" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Activity items will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Users Section -->
-            <section id="users" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Foydalanuvchilar</h2>
-                    <button id="addUserBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-plus mr-2"></i> Yangi Foydalanuvchi
-                    </button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 mb-6">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div class="relative flex-1">
-                            <input type="text" id="searchUsersInput" placeholder="Foydalanuvchi qidirish..." 
-                                   class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        </div>
-                        <div>
-                            <select id="userFilter" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                                <option value="all">Barchasi</option>
-                                <option value="active">Faol</option>
-                                <option value="inactive">Nofaol</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ism</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Qarzdorlar</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Holat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Harakatlar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="usersTable" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Users will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-4">
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span id="usersCount">0</span> ta foydalanuvchi
-                        </div>
-                        <div class="flex gap-2">
-                            <button id="prevUsersPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button id="nextUsersPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Debtors Section -->
-            <section id="debtors" class="hidden">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Barcha Qarzdorlar</h2>
-                    <button id="exportDebtorsBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-file-export mr-2"></i> Eksport
-                    </button>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 mb-6">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div class="relative flex-1">
-                            <input type="text" id="searchDebtorsInput" placeholder="Qarzdor qidirish..." 
-                                   class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        </div>
-                        <div>
-                            <select id="debtorFilter" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                                <option value="all">Barchasi</option>
-                                <option value="active">Qarzi bor</option>
-                                <option value="paid">To'langan</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ism</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Egasi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Qarz Miqdori</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Oxirgi Harakat</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Harakatlar</th>
-                                </tr>
-                            </thead>
-                            <tbody id="debtorsTable" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Debtors will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-4">
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span id="debtorsCount">0</span> ta qarzdor
-                        </div>
-                        <div class="flex gap-2">
-                            <button id="prevDebtorsPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button id="nextDebtorsPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Transactions Section -->
-            <section id="transactions" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Tranzaksiyalar</h2>
-                
-                <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700 mb-6">
-                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
-                        <div class="relative flex-1">
-                            <input type="text" id="searchTransactionsInput" placeholder="Tranzaksiya qidirish..." 
-                                   class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        </div>
-                        <div class="flex gap-2">
-                            <select id="transactionTypeFilter" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                                <option value="all">Barchasi</option>
-                                <option value="add">Qo'shilgan</option>
-                                <option value="sub">Ayirilgan</option>
-                            </select>
-                            <input type="date" id="transactionDateFilter" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                        </div>
-                    </div>
-                    
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                            <thead class="bg-gray-50 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ID</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Qarzdor</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Turi</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Miqdor</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Sana</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Izoh</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionsTable" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                                <!-- Transactions will be added here -->
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-4">
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                            <span id="transactionsCount">0</span> ta tranzaksiya
-                        </div>
-                        <div class="flex gap-2">
-                            <button id="prevTransactionsPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <button id="nextTransactionsPage" class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 disabled:opacity-50">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- Settings Section -->
-            <section id="settings" class="hidden">
-                <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Sozlamalar</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- General Settings -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Umumiy Sozlamalar</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sayt Nomi</label>
-                                <input type="text" value="Qarzdorlik Boshqaruvi" 
-                                       class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                            </div>
-                            
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valyuta</label>
-                                <select class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                                    <option>so'm</option>
-                                    <option>$</option>
-                                    <option>€</option>
-                                    <option>₽</option>
-                                </select>
-                            </div>
-                            
-                            <div class="flex items-center justify-between">
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Qora Mavzu</label>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="darkModeToggle" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                                </label>
-                            </div>
-                            
-                            <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg">
-                                Saqlash
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- Backup & Restore -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Zaxira va Tiklash</h3>
-                        
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Oxirgi Zaxira</label>
-                                <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-gray-600 dark:text-gray-300">2023-11-15 14:30</span>
-                                        <span class="text-green-600 dark:text-green-400">Muvaffaqiyatli</span>
-                                    </div>
-                                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">5.2 MB • 124 ta qarzdor</div>
-                                </div>
-                            </div>
-                            
-                            <button class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg">
-                                <i class="fas fa-download mr-2"></i> Zaxira Olish
-                            </button>
-                            
-                            <button class="w-full bg-purple-500 hover:bg-purple-600 text-white py-2 rounded-lg">
-                                <i class="fas fa-upload mr-2"></i> Ma'lumotlarni Tiklash
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- System Info -->
-                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Tizim Ma'lumotlari</h3>
-                        
-                        <div class="space-y-3">
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600 dark:text-gray-300">Versiya</span>
-                                <span class="text-sm font-medium">1.2.0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600 dark:text-gray-300">Firebase Project</span>
-                                <span class="text-sm font-medium">new-project-6075a</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600 dark:text-gray-300">Foydalanuvchilar</span>
-                                <span class="text-sm font-medium" id="sysUsersCount">0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600 dark:text-gray-300">Qarzdorlar</span>
-                                <span class="text-sm font-medium" id="sysDebtorsCount">0</span>
-                            </div>
-                            <div class="flex justify-between">
-                                <span class="text-sm text-gray-600 dark:text-gray-300">Tranzaksiyalar</span>
-                                <span class="text-sm font-medium" id="sysTransactionsCount">0</span>
-                            </div>
-                            
-                            <div class="pt-3 mt-3 border-t border-gray-200 dark:border-gray-700">
-                                <button class="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg">
-                                    <i class="fas fa-trash-alt mr-2"></i> Cache Tozalash
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-    
-    <!-- Add User Modal -->
-    <div id="addUserModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Yangi Foydalanuvchi</h3>
-                    <button id="closeAddUserModal" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <form id="addUserForm" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ism</label>
-                        <input type="text" required 
-                               class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-                        <input type="email" required 
-                               class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parol</label>
-                        <input type="password" required 
-                               class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rol</label>
-                        <select class="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white">
-                            <option value="user">Foydalanuvchi</option>
-                            <option value="admin">Admin</option>
-                        </select>
-                    </div>
-                    
-                    <div class="flex justify-end gap-3 pt-4">
-                        <button type="button" id="cancelAddUser" class="px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                            Bekor qilish
-                        </button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white">
-                            Saqlash
+                        <input 
+                            type="password" 
+                            id="securityCode" 
+                            name="securityCode"
+                            placeholder="Kodni kiriting..."
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none input-focus transition-all duration-200 text-lg tracking-wider"
+                            required
+                            autocomplete="off"
+                        >
+                        <button 
+                            type="button" 
+                            id="togglePassword"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            <i class="fas fa-eye"></i>
                         </button>
                     </div>
-                </form>
+                </div>
+
+                <button 
+                    type="submit" 
+                    class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center"
+                >
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Kirish
+                </button>
+            </form>
+
+            <!-- Error Message -->
+            <div id="errorMessage" class="hidden mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span id="errorText">Noto'g'ri kod!</span>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loadingSpinner" class="hidden mt-4 text-center">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
+                <p class="text-gray-600 mt-2">Tekshirilmoqda...</p>
             </div>
         </div>
-    </div>
-    
-    <!-- Debtor Details Modal -->
-    <div id="debtorDetailsModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-white">Qarzdor Tafsilotlari</h3>
-                    <button id="closeDebtorDetailsModal" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div id="debtorDetailsContent">
-                    <!-- Content will be loaded here -->
-                </div>
-            </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-6">
+            <p class="text-white text-sm opacity-80">
+                <i class="fas fa-lock mr-1"></i>
+                Xavfsizlik tizimi
+            </p>
         </div>
     </div>
-    
-    <!-- Loading Spinner -->
-    <div id="loadingSpinner" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30 hidden">
-        <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12"></div>
-    </div>
-    
-    <!-- Scripts -->
-    <script type="module" src="admin.js"></script>
+
+    <!-- Firebase Scripts -->
+    <script type="module" src="index.js">
+       
+    </script>
 </body>
 </html>

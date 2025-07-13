@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Auth Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Firebase Auth Test</h1>
+        
+        <div id="status" class="mb-4 p-3 rounded">
+            <p>Status: <span id="statusText">Checking...</span></p>
+        </div>
+        
+        <button id="testAuth" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+            Test Anonymous Auth
+        </button>
+        
+        <div id="result" class="mt-4 p-3 bg-gray-100 rounded hidden">
+            <pre id="resultText"></pre>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyACHEuejKVniBAcYExQxk23A9QD84bUaB4",
+            authDomain: "new-project-6075a.firebaseapp.com",
+            projectId: "new-project-6075a",
+            storageBucket: "new-project-6075a.appspot.com",
+            messagingSenderId: "974403904500",
+            appId: "1:974403904500:web:5d4edb5db8f5432cbdcfa1",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        const statusText = document.getElementById('statusText');
+        const status = document.getElementById('status');
+        const testAuthBtn = document.getElementById('testAuth');
+        const result = document.getElementById('result');
+        const resultText = document.getElementById('resultText');
+
+        // Check initial auth state
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                statusText.textContent = `Authenticated: ${user.uid}`;
+                status.className = 'mb-4 p-3 rounded bg-green-100 text-green-800';
+            } else {
+                statusText.textContent = 'Not authenticated';
+                status.className = 'mb-4 p-3 rounded bg-yellow-100 text-yellow-800';
+            }
+        });
+
+        // Test anonymous auth
+        testAuthBtn.addEventListener('click', async () => {
+            try {
+                testAuthBtn.disabled = true;
+                testAuthBtn.textContent = 'Testing...';
+                
+                const userCredential = await signInAnonymously(auth);
+                
+                resultText.textContent = JSON.stringify({
+                    success: true,
+                    user: {
+                        uid: userCredential.user.uid,
+                        isAnonymous: userCredential.user.isAnonymous,
+                        email: userCredential.user.email
+                    }
+                }, null, 2);
+                
+                result.classList.remove('hidden');
+                result.className = 'mt-4 p-3 bg-green-100 rounded';
+                
+            } catch (error) {
+                resultText.textContent = JSON.stringify({
+                    success: false,
+                    error: {
+                        code: error.code,
+                        message: error.message
+                    }
+                }, null, 2);
+                
+                result.classList.remove('hidden');
+                result.className = 'mt-4 p-3 bg-red-100 rounded';
+            } finally {
+                testAuthBtn.disabled = false;
+                testAuthBtn.textContent = 'Test Anonymous Auth';
+            }
+        });
+    </script>
+</body>
+</html> 
