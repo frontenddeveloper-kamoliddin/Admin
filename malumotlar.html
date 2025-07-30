@@ -67,6 +67,10 @@
                     <i class="fas fa-exchange-alt"></i>
                     <span>Tranzaksiyalar</span>
                 </a>
+                <button onclick="window.location.href='mesaage.html'" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
+                    <i class="fas fa-envelope"></i>
+                    <span>Xabarlar</span>
+                </button>
                 <a href="#settings" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
                     <i class="fas fa-cog"></i>
                     <span>Sozlamalar</span>
@@ -120,15 +124,15 @@
                 <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">Admin Dashboard</h2>
                 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Foydalanuvchilar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalUsers">0</h3>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Jami Foydalanuvchilar</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="totalUsers">0</h3>
                             </div>
                             <div class="p-3 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                                <i class="fas fa-users text-xl"></i>
+                                <i class="fas fa-users text-lg lg:text-xl"></i>
                             </div>
                         </div>
                     </div>
@@ -136,11 +140,11 @@
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Qarzdorlar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtors">0</h3>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Jami Qarzdorlar</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtors">0</h3>
                             </div>
                             <div class="p-3 rounded-full bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-300">
-                                <i class="fas fa-file-invoice-dollar text-xl"></i>
+                                <i class="fas fa-file-invoice-dollar text-lg lg:text-xl"></i>
                             </div>
                         </div>
                     </div>
@@ -148,11 +152,11 @@
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 dark:text-gray-400">Jami Qarz Miqdori</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtAmount">0 so'm</h3>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Jami Qarz Miqdori</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="totalDebtAmount">0 so'm</h3>
                             </div>
                             <div class="p-3 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-300">
-                                <i class="fas fa-money-bill-wave text-xl"></i>
+                                <i class="fas fa-money-bill-wave text-lg lg:text-xl"></i>
                             </div>
                         </div>
                     </div>
@@ -160,11 +164,35 @@
                     <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
                         <div class="flex items-center justify-between">
                             <div>
-                                <p class="text-gray-500 dark:text-gray-400">Faol Tranzaksiyalar</p>
-                                <h3 class="text-2xl font-bold text-gray-800 dark:text-white" id="activeTransactions">0</h3>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Faol Tranzaksiyalar</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="activeTransactions">0</h3>
                             </div>
                             <div class="p-3 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                                <i class="fas fa-exchange-alt text-xl"></i>
+                                <i class="fas fa-exchange-alt text-lg lg:text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Qo'shilganlar</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="totalAdded">0 so'm</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-300">
+                                <i class="fas fa-plus-circle text-lg lg:text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow border border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm lg:text-base">Ayirilganlar</p>
+                                <h3 class="text-lg lg:text-2xl font-bold text-gray-800 dark:text-white" id="totalSubtracted">0 so'm</h3>
+                            </div>
+                            <div class="p-3 rounded-full bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-300">
+                                <i class="fas fa-minus-circle text-lg lg:text-xl"></i>
                             </div>
                         </div>
                     </div>
@@ -557,5 +585,8 @@
     
     <!-- Scripts -->
     <script type="module" src="admin.js"></script>
+    <script>
+        // Xabar sahifasiga o'tish - button onclick bilan ishlaydi
+    </script>
 </body>
 </html>

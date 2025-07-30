@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin-Xabar Tizimi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+        }
+        
+        .dark .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .message-animation {
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .unread-message {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .unread-message::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+        
+        .admin-badge {
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .user-badge {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            animation: bgShift 30s ease-in-out infinite;
+        }
+
+        @keyframes bgShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05) rotate(0.5deg); }
+        }
+        
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0; }
+            50% { transform: translateY(-30px) rotate(180deg); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-slate-900 dark:to-slate-800">
+    <div class="bg-animation"></div>
+    <div class="particles" id="particles"></div>
+    
+    <!-- Header -->
+    <header class="w-full py-4 px-6 bg-white dark:bg-slate-800 shadow-md flex justify-between items-center relative z-10">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold">
+                <i class="fas fa-message"></i>
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 dark:text-white">Admin-Xabar Tizimi</h1>
+        </div>
+        
+        <div class="flex items-center gap-4">
+            <button id="toggleDark" class="w-10 h-10 rounded-full bg-white dark:bg-slate-700 shadow flex items-center justify-center">
+                <i id="darkIcon" class="fas fa-moon text-indigo-600 dark:text-yellow-400"></i>
+            </button>
+            <div class="relative">
+                <div class="flex items-center gap-3">
+                    <div class="text-right">
+                        <div class="font-medium text-slate-800 dark:text-white">Admin</div>
+                        <div class="text-xs text-slate-600 dark:text-slate-400">Administrator</div>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-amber-500 to-red-500 flex items-center justify-center text-white font-bold">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto py-6 px-4 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Users List -->
+            <div class="lg:col-span-1">
+                <div class="glass-card rounded-xl p-5 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-white">Foydalanuvchilar</h2>
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
+                            <input type="text" id="userSearch" placeholder="Foydalanuvchi qidirish..." class="pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                        </div>
+                    </div>
+                    
+                    <div id="usersList" class="space-y-3 max-h-[500px] overflow-y-auto pr-2">
+                        <div class="text-center text-slate-600 dark:text-slate-400 py-8">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Foydalanuvchilar yuklanmoqda...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Admin Actions -->
+                <div class="glass-card rounded-xl p-5">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Admin Harakatlari</h2>
+                    
+                    <div class="space-y-3">
+                        <button id="broadcastBtn" class="w-full flex items-center gap-3 p-3 rounded-lg bg-indigo-100 dark:bg-slate-700 hover:bg-indigo-200 dark:hover:bg-slate-600 transition text-indigo-700 dark:text-indigo-300">
+                            <i class="fas fa-bullhorn"></i>
+                            <span>Barchaga xabar yuborish</span>
+                        </button>
+                        
+                        <button id="viewAllBtn" class="w-full flex items-center gap-3 p-3 rounded-lg bg-green-100 dark:bg-slate-700 hover:bg-green-200 dark:hover:bg-slate-600 transition text-green-700 dark:text-green-300">
+                            <i class="fas fa-eye"></i>
+                            <span>Yangi xabar yozish</span>
+                        </button>
+                        
+                        <button id="deleteAllBtn" class="w-full flex items-center gap-3 p-3 rounded-lg bg-red-100 dark:bg-slate-700 hover:bg-red-200 dark:hover:bg-slate-600 transition text-red-700 dark:text-red-300">
+                            <i class="fas fa-trash"></i>
+                            <span>Barcha xabarlarni o'chirish</span>
+                        </button>
+                        
+                        <button onclick="window.location.href='malumotlar.html'" class="w-full flex items-center gap-3 p-3 rounded-lg bg-blue-100 dark:bg-slate-700 hover:bg-blue-200 dark:hover:bg-slate-600 transition text-blue-700 dark:text-blue-300">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Dashboardga qaytish</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Messages Area -->
+            <div class="lg:col-span-2">
+                <div class="glass-card rounded-xl p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                            <span>Xabarlar</span>
+                            <span id="unreadCount" class="bg-indigo-500 text-white text-xs px-2 py-1 rounded-full hidden">0 ta yangi xabar</span>
+                        </h2>
+                        <div class="flex items-center gap-2">
+                            <button id="refreshBtn" class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button id="markReadBtn" class="px-3 py-2 rounded-lg bg-indigo-500 text-white text-sm">
+                                <i class="fas fa-check-circle mr-1"></i> Barchasini o'qilgan deb belgilash
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="messagesContainer" class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                        <div class="text-center text-slate-600 dark:text-slate-400 py-8">
+                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                            <p>Xabarlar yuklanmoqda...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- New Message Form -->
+                <div id="newMessageForm" class="glass-card rounded-xl p-5 mt-6 hidden">
+                    <h2 class="text-lg font-bold text-slate-800 dark:text-white mb-4">Yangi Xabar Yuborish</h2>
+                    
+                    <form id="messageForm">
+                        <div class="mb-4">
+                            <label class="block text-slate-700 dark:text-slate-300 mb-2">Kimga</label>
+                            <select id="messageTo" class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                                <option value="">Foydalanuvchi tanlang...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-slate-700 dark:text-slate-300 mb-2">Mavzu</label>
+                            <input type="text" id="messageSubject" placeholder="Xabar mavzusi..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="block text-slate-700 dark:text-slate-300 mb-2">Xabar matni</label>
+                            <textarea id="messageText" rows="4" placeholder="Xabaringizni yozing..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"></textarea>
+                        </div>
+                        
+                        <div class="flex gap-3">
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition">
+                                <i class="fas fa-paper-plane mr-2"></i> Xabarni yuborish
+                            </button>
+                            <button type="button" id="cancelMessageBtn" class="bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-white px-4 py-3 rounded-lg font-medium transition">
+                                <i class="fas fa-times mr-2"></i> Bekor qilish
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Broadcast Modal -->
+    <div id="broadcastModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">Barchaga xabar yuborish</h3>
+                    <button id="closeBroadcastModal" class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-2">Mavzu</label>
+                    <input type="text" id="broadcastSubject" placeholder="Xabar mavzusi..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-2">Xabar matni</label>
+                    <textarea id="broadcastText" rows="4" placeholder="Xabaringizni yozing..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"></textarea>
+                </div>
+                
+                <button type="button" id="sendBroadcastBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition">
+                    <i class="fas fa-bullhorn mr-2"></i> Barchaga yuborish
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Reply Modal -->
+    <div id="replyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4">
+            <div class="p-6 border-b border-slate-200 dark:border-slate-700">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold text-slate-800 dark:text-white">Javob berish</h3>
+                    <button id="closeReplyModal" class="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-2">Qabul qiluvchi</label>
+                    <input type="text" id="replyTo" class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white" readonly>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-2">Mavzu</label>
+                    <input type="text" id="replySubject" placeholder="Javob mavzusi..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-slate-700 dark:text-slate-300 mb-2">Javob matni</label>
+                    <textarea id="replyText" rows="4" placeholder="Javobingizni yozing..." class="w-full p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-slate-800 dark:text-white"></textarea>
+                </div>
+                
+                <button type="button" id="sendReplyBtn" class="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white px-4 py-3 rounded-lg font-medium transition">
+                    <i class="fas fa-paper-plane mr-2"></i> Javobni yuborish
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        // Firebase Auth importlari o'chirildi, chunki autentifikatsiya kerak emas
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            getDocs,
+            updateDoc,
+            doc,
+            arrayUnion,
+            Timestamp,
+            deleteDoc,
+            getDoc,
+            setDoc,
+            query,
+            where,
+            onSnapshot,
+            orderBy,
+        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyACHEuejKVniBAcYExQxk23A9QD84bUaB4",
+            authDomain: "new-project-6075a.firebaseapp.com",
+            projectId: "new-project-6075a",
+            storageBucket: "new-project-6075a.appspot.com",
+            messagingSenderId: "974403904500",
+            appId: "1:974403904500:web:5d4edb5db8f5432cbdcfa1",
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentUserData = null;
+        let messagesListener = null;
+        let allUsers = [];
+        let allMessages = [];
+
+        // Initialize app
+        async function initApp() {
+            // Autentifikatsiya tekshiruvini o'chirib, to'g'ridan-to'g'ri ma'lumotlarni yuklash
+            currentUser = { uid: 'admin', displayName: 'Admin' };
+            await loadAllUsers();
+            await loadAllMessages();
+            setupMessageListener();
+        }
+
+        // Load user data - o'chirildi, chunki autentifikatsiya kerak emas
+        async function loadUserData() {
+            // Bu funksiya endi kerak emas
+            currentUserData = { displayName: 'Admin', role: 'admin' };
+        }
+
+        // Load all users
+        async function loadAllUsers() {
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                allUsers = [];
+                
+                usersSnap.forEach(doc => {
+                    const userData = doc.data();
+                    allUsers.push({
+                        id: doc.id,
+                        ...userData
+                    });
+                });
+
+                renderUsersList(allUsers);
+                updateMessageToSelect();
+            } catch (error) {
+                console.error('Error loading users:', error);
+            }
+        }
+
+        // Render users list
+        function renderUsersList(users) {
+            const usersList = document.getElementById('usersList');
+            
+            if (users.length === 0) {
+                usersList.innerHTML = '<div class="text-center text-slate-600 dark:text-slate-400 py-8"><i class="fas fa-users text-2xl mb-2"></i><p>Foydalanuvchilar topilmadi</p></div>';
+                return;
+            }
+
+            usersList.innerHTML = users.map(user => {
+                const displayName = user.displayName || user.username || 'Foydalanuvchi';
+                const userCode = user.sidebarUserCode || user.id.slice(-4);
+                const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase();
+                
+                return `
+                    <div class="user-item flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-50 dark:hover:bg-slate-700 transition cursor-pointer" data-user-id="${user.id}" data-user-code="${userCode}">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold">
+                            ${initials || 'U'}
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-medium text-slate-800 dark:text-white">${displayName}</div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400">#${userCode}</div>
+                        </div>
+                        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Update message to select
+        function updateMessageToSelect() {
+            const select = document.getElementById('messageTo');
+            select.innerHTML = '<option value="">Foydalanuvchi tanlang...</option>';
+            
+            allUsers.forEach(user => {
+                const displayName = user.displayName || user.username || 'Foydalanuvchi';
+                const userCode = user.sidebarUserCode || user.id;
+                select.innerHTML += `<option value="${userCode}">${displayName} (#${userCode})</option>`;
+            });
+        }
+
+        // Load all messages
+        async function loadAllMessages() {
+            try {
+                const messagesSnap = await getDocs(collection(db, 'messages'));
+                allMessages = [];
+                
+                messagesSnap.forEach(doc => {
+                    allMessages.push({
+                        id: doc.id,
+                        ...doc.data()
+                    });
+                });
+
+                // Sort by creation date (newest first)
+                allMessages.sort((a, b) => b.createdAt?.toDate() - a.createdAt?.toDate());
+
+                renderMessages(allMessages);
+            } catch (error) {
+                console.error('Error loading messages:', error);
+            }
+        }
+
+        // Setup real-time message listener
+        function setupMessageListener() {
+            if (messagesListener) {
+                messagesListener();
+            }
+
+            messagesListener = onSnapshot(collection(db, 'messages'), (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const message = { id: change.doc.id, ...change.doc.data() };
+                        allMessages.unshift(message);
+                        addMessageToUI(message, true);
+                        updateUnreadCount();
+                    }
+                });
+            });
+        }
+
+        // Render messages
+        function renderMessages(messages) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            
+            if (messages.length === 0) {
+                messagesContainer.innerHTML = '<div class="text-center text-slate-600 dark:text-slate-400 py-8"><i class="fas fa-inbox text-2xl mb-2"></i><p>Hali xabar yo\'q</p></div>';
+                return;
+            }
+
+            messagesContainer.innerHTML = messages.map(message => createMessageHTML(message)).join('');
+            updateUnreadCount();
+        }
+
+        // Add single message to UI
+        function addMessageToUI(message, animate = false) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageHTML = createMessageHTML(message);
+            
+            if (animate) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = messageHTML;
+                const messageElement = tempDiv.firstElementChild;
+                messageElement.style.opacity = '0';
+                messageElement.style.transform = 'translateY(-10px)';
+                
+                messagesContainer.insertBefore(messageElement, messagesContainer.firstChild);
+                
+                setTimeout(() => {
+                    messageElement.style.transition = 'all 0.3s ease';
+                    messageElement.style.opacity = '1';
+                    messageElement.style.transform = 'translateY(0)';
+                }, 10);
+            } else {
+                messagesContainer.insertAdjacentHTML('afterbegin', messageHTML);
+            }
+        }
+
+        // Create message HTML
+        function createMessageHTML(message) {
+            const isAdmin = message.from === 'admin' || message.fromName === 'Admin';
+            const isUnread = !message.read;
+            const messageTime = message.createdAt?.toDate ? message.createdAt.toDate().toLocaleString('uz-UZ') : 'Noma\'lum vaqt';
+            const senderName = message.fromName || (isAdmin ? 'Admin' : 'Foydalanuvchi');
+            const senderCode = message.from || '000';
+            const messageText = message.text || message.message || 'Xabar matni yo\'q';
+            const messageSubject = message.subject || '';
+            
+            return `
+                <div class="message-animation ${isUnread ? 'unread-message glass-card rounded-xl p-4 bg-blue-50 dark:bg-slate-700' : 'glass-card rounded-xl p-4'}" data-message-id="${message.id}">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-2">
+                            <div class="font-medium text-slate-800 dark:text-white">${senderName}</div>
+                            <span class="text-xs text-slate-500 dark:text-slate-400">#${senderCode}</span>
+                            ${isAdmin ? '<span class="admin-badge">Admin</span>' : '<span class="user-badge">Foydalanuvchi</span>'}
+                        </div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">${messageTime}</div>
+                    </div>
+                    <div class="text-slate-700 dark:text-slate-300 mb-3">
+                        ${messageSubject ? `<div class="font-semibold mb-1">${messageSubject}</div>` : ''}
+                        <div>${messageText}</div>
+                    </div>
+                    <div class="flex gap-2">
+                        ${!isAdmin ? `
+                            <button onclick="replyToMessage('${message.id}', '${senderName}', '${senderCode}')" class="text-xs bg-indigo-500 text-white px-3 py-1 rounded">Javob berish</button>
+                        ` : ''}
+                        <button onclick="deleteMessage('${message.id}')" class="text-xs bg-slate-200 dark:bg-slate-600 text-slate-800 dark:text-slate-300 px-3 py-1 rounded">O'chirish</button>
+                        ${isUnread ? `
+                            <button onclick="markAsRead('${message.id}')" class="text-xs bg-green-500 text-white px-3 py-1 rounded">O'qilgan deb belgilash</button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Update unread count
+        function updateUnreadCount() {
+            const unreadMessages = document.querySelectorAll('.unread-message');
+            const unreadCount = document.getElementById('unreadCount');
+            
+            if (unreadMessages.length > 0) {
+                unreadCount.textContent = `${unreadMessages.length} ta yangi xabar`;
+                unreadCount.classList.remove('hidden');
+            } else {
+                unreadCount.classList.add('hidden');
+            }
+        }
+
+        // Send message to specific user
+        async function sendMessage(to, subject, text) {
+            try {
+                const messageData = {
+                    from: 'admin',
+                    fromName: 'Admin',
+                    to: to,
+                    subject: subject,
+                    text: text,
+                    createdAt: Timestamp.now(),
+                    read: false,
+                    type: 'admin_to_user'
+                };
+
+                await addDoc(collection(db, 'messages'), messageData);
+                
+                document.getElementById('newMessageForm').classList.add('hidden');
+                document.getElementById('messageForm').reset();
+                
+                showNotification('Xabar muvaffaqiyatli yuborildi!', 'success');
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showNotification('Xabar yuborishda xatolik yuz berdi!', 'error');
+            }
+        }
+
+        // Send broadcast message to all users
+        async function sendBroadcastMessage(subject, text) {
+            try {
+                const messagePromises = allUsers.map(user => {
+                    const userCode = user.sidebarUserCode || user.id;
+                    const messageData = {
+                        from: 'admin',
+                        fromName: 'Admin',
+                        to: userCode,
+                        subject: subject,
+                        text: text,
+                        createdAt: Timestamp.now(),
+                        read: false,
+                        type: 'admin_broadcast'
+                    };
+                    return addDoc(collection(db, 'messages'), messageData);
+                });
+
+                await Promise.all(messagePromises);
+                
+                document.getElementById('broadcastModal').classList.add('hidden');
+                document.getElementById('broadcastSubject').value = '';
+                document.getElementById('broadcastText').value = '';
+                
+                showNotification(`Xabar ${allUsers.length} ta foydalanuvchiga yuborildi!`, 'success');
+            } catch (error) {
+                console.error('Error sending broadcast:', error);
+                showNotification('Xabar yuborishda xatolik yuz berdi!', 'error');
+            }
+        }
+
+        // Reply to message
+        window.replyToMessage = async function(messageId, toName, toId) {
+            document.getElementById('replyTo').value = toName;
+            document.getElementById('replySubject').value = `Re: ${toName} ga javob`;
+            document.getElementById('replyText').value = '';
+            
+            window.replyMessageData = { messageId, toName, toId };
+            
+            document.getElementById('replyModal').classList.remove('hidden');
+        };
+
+        // Send reply
+        async function sendReply() {
+            const subject = document.getElementById('replySubject').value.trim();
+            const text = document.getElementById('replyText').value.trim();
+            
+            if (!text) {
+                showNotification('Javob matnini kiriting!', 'error');
+                return;
+            }
+
+            try {
+                const messageData = {
+                    from: 'admin',
+                    fromName: 'Admin',
+                    to: window.replyMessageData.toId,
+                    subject: subject,
+                    text: text,
+                    createdAt: Timestamp.now(),
+                    read: false,
+                    type: 'admin_to_user'
+                };
+
+                await addDoc(collection(db, 'messages'), messageData);
+                
+                document.getElementById('replyModal').classList.add('hidden');
+                
+                showNotification('Javob muvaffaqiyatli yuborildi!', 'success');
+            } catch (error) {
+                console.error('Error sending reply:', error);
+                showNotification('Javob yuborishda xatolik yuz berdi!', 'error');
+            }
+        }
+
+        // Delete message
+        window.deleteMessage = async function(messageId) {
+            if (!confirm('Haqiqatan ham bu xabarni o\'chirmoqchimisiz?')) {
+                return;
+            }
+
+            try {
+                await deleteDoc(doc(db, 'messages', messageId));
+                allMessages = allMessages.filter(msg => msg.id !== messageId);
+                renderMessages(allMessages);
+                showNotification('Xabar o\'chirildi!', 'success');
+            } catch (error) {
+                console.error('Error deleting message:', error);
+                showNotification('Xabar o\'chirishda xatolik yuz berdi!', 'error');
+            }
+        };
+
+        // Mark as read
+        window.markAsRead = async function(messageId) {
+            try {
+                await updateDoc(doc(db, 'messages', messageId), {
+                    read: true,
+                    readAt: Timestamp.now()
+                });
+                
+                const messageIndex = allMessages.findIndex(msg => msg.id === messageId);
+                if (messageIndex !== -1) {
+                    allMessages[messageIndex].read = true;
+                }
+                
+                renderMessages(allMessages);
+                showNotification('Xabar o\'qilgan deb belgilandi!', 'success');
+            } catch (error) {
+                console.error('Error marking message as read:', error);
+                showNotification('Xatolik yuz berdi!', 'error');
+            }
+        };
+
+        // Mark all as read
+        async function markAllAsRead() {
+            try {
+                const unreadMessages = allMessages.filter(msg => !msg.read);
+                const updatePromises = unreadMessages.map(msg => 
+                    updateDoc(doc(db, 'messages', msg.id), {
+                        read: true,
+                        readAt: Timestamp.now()
+                    })
+                );
+                
+                await Promise.all(updatePromises);
+                
+                allMessages.forEach(msg => {
+                    if (!msg.read) {
+                        msg.read = true;
+                    }
+                });
+                
+                renderMessages(allMessages);
+                showNotification('Barcha xabarlar o\'qilgan deb belgilandi!', 'success');
+            } catch (error) {
+                console.error('Error marking all as read:', error);
+                showNotification('Xatolik yuz berdi!', 'error');
+            }
+        }
+
+        // Delete all messages
+        async function deleteAllMessages() {
+            if (!confirm('Haqiqatan ham barcha xabarlarni o\'chirmoqchimisiz? Bu amalni qaytarib bo\'lmaydi.')) {
+                return;
+            }
+
+            try {
+                const deletePromises = allMessages.map(msg => 
+                    deleteDoc(doc(db, 'messages', msg.id))
+                );
+                
+                await Promise.all(deletePromises);
+                
+                allMessages = [];
+                renderMessages(allMessages);
+                showNotification('Barcha xabarlar o\'chirildi!', 'success');
+            } catch (error) {
+                console.error('Error deleting all messages:', error);
+                showNotification('Xatolik yuz berdi!', 'error');
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 transform translate-x-full ${
+                type === 'success' ? 'bg-green-500 text-white' :
+                type === 'error' ? 'bg-red-500 text-white' :
+                'bg-blue-500 text-white'
+            }`;
+            notification.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.remove('translate-x-full');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.add('translate-x-full');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            // Dark mode toggle
+            const toggleBtn = document.getElementById('toggleDark');
+            const html = document.documentElement;
+            
+            toggleBtn.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                const icon = document.getElementById('darkIcon');
+                if (html.classList.contains('dark')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+
+            // User search
+            document.getElementById('userSearch').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const filteredUsers = allUsers.filter(user => {
+                    const displayName = (user.displayName || user.username || '').toLowerCase();
+                    const userCode = (user.sidebarUserCode || user.id).toLowerCase();
+                    return displayName.includes(searchTerm) || userCode.includes(searchTerm);
+                });
+                renderUsersList(filteredUsers);
+            });
+
+            // Broadcast button
+            document.getElementById('broadcastBtn').addEventListener('click', () => {
+                document.getElementById('broadcastModal').classList.remove('hidden');
+            });
+
+            // View all button
+            document.getElementById('viewAllBtn').addEventListener('click', () => {
+                document.getElementById('newMessageForm').classList.remove('hidden');
+            });
+
+            // Delete all button
+            document.getElementById('deleteAllBtn').addEventListener('click', () => {
+                deleteAllMessages();
+            });
+
+            // Refresh button
+            document.getElementById('refreshBtn').addEventListener('click', () => {
+                loadAllMessages();
+            });
+
+            // Mark read button
+            document.getElementById('markReadBtn').addEventListener('click', () => {
+                markAllAsRead();
+            });
+
+            // Message form submission
+            document.getElementById('messageForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const to = document.getElementById('messageTo').value;
+                const subject = document.getElementById('messageSubject').value.trim();
+                const text = document.getElementById('messageText').value.trim();
+                
+                if (!to) {
+                    showNotification('Foydalanuvchi tanlang!', 'error');
+                    return;
+                }
+                
+                if (!text) {
+                    showNotification('Xabar matnini kiriting!', 'error');
+                    return;
+                }
+                
+                sendMessage(to, subject, text);
+            });
+
+            // Cancel message button
+            document.getElementById('cancelMessageBtn').addEventListener('click', () => {
+                document.getElementById('newMessageForm').classList.add('hidden');
+                document.getElementById('messageForm').reset();
+            });
+
+            // Broadcast modal
+            document.getElementById('closeBroadcastModal').addEventListener('click', () => {
+                document.getElementById('broadcastModal').classList.add('hidden');
+            });
+
+            // Send broadcast button
+            document.getElementById('sendBroadcastBtn').addEventListener('click', () => {
+                const subject = document.getElementById('broadcastSubject').value.trim();
+                const text = document.getElementById('broadcastText').value.trim();
+                
+                if (!text) {
+                    showNotification('Xabar matnini kiriting!', 'error');
+                    return;
+                }
+                
+                sendBroadcastMessage(subject, text);
+            });
+
+            // Close broadcast modal on overlay click
+            document.getElementById('broadcastModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('broadcastModal')) {
+                    document.getElementById('broadcastModal').classList.add('hidden');
+                }
+            });
+
+            // Reply modal
+            document.getElementById('closeReplyModal').addEventListener('click', () => {
+                document.getElementById('replyModal').classList.add('hidden');
+            });
+
+            // Send reply button
+            document.getElementById('sendReplyBtn').addEventListener('click', () => {
+                sendReply();
+            });
+
+            // Close reply modal on overlay click
+            document.getElementById('replyModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('replyModal')) {
+                    document.getElementById('replyModal').classList.add('hidden');
+                }
+            });
+
+            // Create floating particles
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 30;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 8 + 's';
+                particle.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        });
+
+        // Initialize app
+        initApp();
+    </script>
+</body>
+</html>

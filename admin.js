@@ -98,6 +98,8 @@ const totalUsersEl = document.getElementById("totalUsers");
 const totalDebtorsEl = document.getElementById("totalDebtors");
 const totalDebtAmountEl = document.getElementById("totalDebtAmount");
 const activeTransactionsEl = document.getElementById("activeTransactions");
+const totalAddedEl = document.getElementById("totalAdded");
+const totalSubtractedEl = document.getElementById("totalSubtracted");
 const sysUsersCount = document.getElementById("sysUsersCount");
 const sysDebtorsCount = document.getElementById("sysDebtorsCount");
 const sysTransactionsCount = document.getElementById("sysTransactionsCount");
@@ -152,6 +154,8 @@ function setupEventListeners() {
       showSection(target);
     });
   });
+  
+  // Xabar sahifasiga o'tish - button onclick bilan ishlaydi
   
   // Users section
   addUserBtn.addEventListener("click", () => addUserModal.classList.remove("hidden"));
@@ -303,6 +307,9 @@ async function loadInitialData() {
     // Initialize charts
     initCharts();
     
+    // Update charts with real data
+    await updateChartsWithRealData();
+    
     // Hide loading
     hideLoading();
   } catch (error) {
@@ -363,6 +370,37 @@ async function loadStats() {
     
     activeTransactionsEl.textContent = transactionsCount;
     sysTransactionsCount.textContent = transactionsCount;
+    
+    // Calculate total added and subtracted amounts
+    let totalAdded = 0;
+    let totalSubtracted = 0;
+    
+    debtorsSnapshot.forEach(doc => {
+      const data = doc.data();
+      
+      if (typeof data.totalAdded === "number") {
+        totalAdded += data.totalAdded;
+      } else {
+        (data.history || []).forEach(h => {
+          if (h.type === "add") totalAdded += h.amount || 0;
+        });
+      }
+      
+      if (typeof data.totalSubtracted === "number") {
+        totalSubtracted += data.totalSubtracted;
+      } else {
+        (data.history || []).forEach(h => {
+          if (h.type === "sub") totalSubtracted += h.amount || 0;
+        });
+      }
+    });
+    
+    // Update the new stats elements
+    totalAddedEl.textContent = `${totalAdded.toLocaleString()} so'm`;
+    totalSubtractedEl.textContent = `${totalSubtracted.toLocaleString()} so'm`;
+    
+    // Update charts with real data
+    await updateChartsWithRealData();
     
   } catch (error) {
     console.error("Error loading stats:", error);
@@ -464,7 +502,7 @@ function initCharts() {
       labels: ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul"],
       datasets: [{
         label: "Yangi Foydalanuvchilar",
-        data: [12, 19, 3, 5, 2, 3, 15],
+        data: [0, 0, 0, 0, 0, 0, 0],
         backgroundColor: "rgba(59, 130, 246, 0.2)",
         borderColor: "rgba(59, 130, 246, 1)",
         borderWidth: 2,
@@ -498,12 +536,12 @@ function initCharts() {
       datasets: [
         {
           label: "Qo'shilgan",
-          data: [1200000, 1900000, 300000, 500000, 200000, 300000, 1500000],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "rgba(16, 185, 129, 0.7)",
         },
         {
           label: "Ayirilgan",
-          data: [800000, 1200000, 250000, 400000, 150000, 200000, 1000000],
+          data: [0, 0, 0, 0, 0, 0, 0],
           backgroundColor: "rgba(239, 68, 68, 0.7)",
         }
       ]
@@ -530,6 +568,78 @@ function initCharts() {
       }
     }
   });
+}
+
+// Update charts with real data
+async function updateChartsWithRealData() {
+  try {
+    // Get all debtors data
+    const debtorsQuery = query(collection(db, "debtors"));
+    const debtorsSnapshot = await getDocs(debtorsQuery);
+    
+    // Get all users data
+    const usersQuery = query(collection(db, "users"));
+    const usersSnapshot = await getDocs(usersQuery);
+    
+    // Initialize monthly data
+    const months = ["Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun", "Iyul"];
+    const monthlyAdded = [0, 0, 0, 0, 0, 0, 0];
+    const monthlySubtracted = [0, 0, 0, 0, 0, 0, 0];
+    const monthlyUsers = [0, 0, 0, 0, 0, 0, 0];
+    
+    // Process each debtor's history for financial data
+    debtorsSnapshot.forEach(doc => {
+      const data = doc.data();
+      const history = data.history || [];
+      
+      history.forEach(transaction => {
+        const date = transaction.date?.toDate ? transaction.date.toDate() : new Date();
+        const month = date.getMonth(); // 0-11 (January = 0)
+        
+        if (month >= 0 && month < 7) { // Only process first 7 months
+          if (transaction.type === "add") {
+            monthlyAdded[month] += transaction.amount || 0;
+          } else if (transaction.type === "sub") {
+            monthlySubtracted[month] += transaction.amount || 0;
+          }
+        }
+      });
+    });
+    
+    // Process users data for user statistics
+    usersSnapshot.forEach(doc => {
+      const data = doc.data();
+      const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : 
+                       data.timestamp?.toDate ? data.timestamp.toDate() : 
+                       new Date();
+      const month = createdAt.getMonth();
+      if (month >= 0 && month < 7) {
+        monthlyUsers[month]++;
+      }
+    });
+    
+    // Update users chart
+    if (usersChart) {
+      usersChart.data.datasets[0].data = monthlyUsers;
+      usersChart.update();
+    }
+    
+    // Update debt chart
+    if (debtChart) {
+      debtChart.data.datasets[0].data = monthlyAdded;
+      debtChart.data.datasets[1].data = monthlySubtracted;
+      debtChart.update();
+    }
+    
+    console.log("Charts updated with real data:", {
+      monthlyUsers,
+      monthlyAdded,
+      monthlySubtracted
+    });
+    
+  } catch (error) {
+    console.error("Error updating charts with real data:", error);
+  }
 }
 
 // Load users
