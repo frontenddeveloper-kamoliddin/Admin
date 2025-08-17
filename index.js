@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 // Firebase configuration
 const firebaseConfig = {
@@ -53,86 +53,6 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-// Toggle password visibility
-togglePasswordBtn.addEventListener('click', () => {
-    const type = securityCodeInput.type === 'password' ? 'text' : 'password';
-    securityCodeInput.type = type;
-    
-    const icon = togglePasswordBtn.querySelector('i');
-    icon.className = type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
-});
-
-// Handle form submission
-loginForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const enteredCode = securityCodeInput.value.trim();
-    
-    // Show loading
-    showLoading();
-    hideError();
-    
-    // Simulate a small delay for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Check if code is correct
-    if (enteredCode === amarco) {
-        try {
-            console.log('Correct code entered, signing in anonymously...');
-            
-            // Set authentication in localStorage
-            setAuthenticated();
-            
-            try {
-                // Try to sign in anonymously to Firebase
-                const userCredential = await signInAnonymously(auth);
-                console.log('Anonymous sign-in successful:', userCredential.user);
-            } catch (error) {
-                console.log('Anonymous sign-in failed, but continuing with localStorage auth:', error);
-            }
-            
-            // Add a small delay to ensure auth state is properly set
-            await new Promise(resolve => setTimeout(resolve, 500));
-            
-            // Success - redirect to admin panel
-            window.location.href = 'malumotlar.html';
-        } catch (error) {
-            console.error('Authentication error:', error);
-            showError('Autentifikatsiya xatosi! Iltimos, qaytadan urinib ko\'ring.');
-            hideLoading();
-        }
-    } else {
-        // Show error
-        showError('Noto\'g\'ri xavfsizlik kodi! Iltimos, qaytadan urinib ko\'ring.');
-        securityCodeInput.value = '';
-        securityCodeInput.focus();
-        hideLoading();
-    }
-});
-
-// Show loading spinner
-function showLoading() {
-    loadingSpinner.classList.remove('hidden');
-    loginForm.querySelector('button[type="submit"]').disabled = true;
-}
-
-// Hide loading spinner
-function hideLoading() {
-    loadingSpinner.classList.add('hidden');
-    loginForm.querySelector('button[type="submit"]').disabled = false;
-}
-
-// Show error message
-function showError(message) {
-    errorText.textContent = message;
-    errorMessage.classList.remove('hidden');
-}
-
-// Hide error message
-function hideError() {
-    errorMessage.classList.add('hidden');
-}
-
 // Focus on input when page loads
 window.addEventListener('load', () => {
     securityCodeInput.focus();
@@ -151,3 +71,8 @@ securityCodeInput.addEventListener('input', () => {
         hideError();
     }
 });
+
+// Parol, forma va logout funksiyalari olib tashlandi
+// Faqat sahifa yuklanganda to'g'ridan-to'g'ri malumotlar.html ga yo'naltiriladi
+
+window.location.href = 'malumotlar.html';

@@ -53,7 +53,6 @@ const sidebar = document.getElementById("sidebar");
 const sidebarOverlay = document.getElementById("sidebarOverlay");
 const openSidebarBtn = document.getElementById("openSidebar");
 const closeSidebarBtn = document.getElementById("closeSidebar");
-const logoutBtn = document.getElementById("logoutBtn");
 const toggleDarkModeBtn = document.getElementById("toggleDarkMode");
 const sections = {
   dashboard: document.getElementById("dashboard"),
@@ -106,15 +105,8 @@ const sysTransactionsCount = document.getElementById("sysTransactionsCount");
 
 // Initialize the app
 function init() {
-  // Check localStorage authentication immediately
-  if (!isLocalStorageAuthenticated()) {
-    console.log('No localStorage authentication found, redirecting to login');
-    window.location.href = "index.html";
-    return;
-  }
-  
   setupEventListeners();
-  checkAuthState();
+  showSection("dashboard");
   loadInitialData();
 }
 
@@ -125,27 +117,13 @@ function setupEventListeners() {
     sidebar.classList.remove("-translate-x-full");
     sidebarOverlay.classList.remove("hidden");
   });
-  
+
   closeSidebarBtn.addEventListener("click", closeSidebar);
   sidebarOverlay.addEventListener("click", closeSidebar);
-  
-  // Logout
-  logoutBtn.addEventListener("click", () => {
-    // Clear localStorage authentication
-    localStorage.removeItem('adminAuthenticated');
-    localStorage.removeItem('adminAuthTime');
-    
-    signOut(auth).then(() => {
-      window.location.href = "index.html";
-    }).catch(() => {
-      // Even if Firebase signOut fails, redirect to login
-      window.location.href = "index.html";
-    });
-  });
-  
+
   // Dark mode toggle
   toggleDarkModeBtn.addEventListener("click", toggleDarkMode);
-  
+
   // Navigation
   navLinks.forEach(link => {
     link.addEventListener("click", (e) => {
@@ -154,9 +132,9 @@ function setupEventListeners() {
       showSection(target);
     });
   });
-  
+
   // Xabar sahifasiga o'tish - button onclick bilan ishlaydi
-  
+
   // Users section
   addUserBtn.addEventListener("click", () => addUserModal.classList.remove("hidden"));
   closeAddUserModal.addEventListener("click", () => addUserModal.classList.add("hidden"));
@@ -176,7 +154,7 @@ function setupEventListeners() {
       renderUsersTable();
     }
   });
-  
+
   // Debtors section
   searchDebtorsInput.addEventListener("input", filterDebtors);
   debtorFilter.addEventListener("change", filterDebtors);
@@ -192,7 +170,7 @@ function setupEventListeners() {
       renderDebtorsTable();
     }
   });
-  
+
   // Transactions section
   searchTransactionsInput.addEventListener("input", filterTransactions);
   transactionTypeFilter.addEventListener("change", filterTransactions);
